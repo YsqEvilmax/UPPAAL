@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+//No. of trains 
+const int N = 3;
+//Generate train ids
+typedef int [0, N-1] trainId;
+//Record the number of trains crossing
+int trainCount = 0;
+
+chan appr[N], leave[N];
+urgent chan rise, lower;
+urgent chan turnGreen, turnRed;</declaration>
+	<template>
+		<name>Trace</name>
+		<parameter>const trainId myId</parameter>
+		<declaration>// Place local declarations here.
+clock t;</declaration>
+		<location id="id0" x="153" y="93">
+			<name x="187" y="85">Cross</name>
+			<urgent/>
+		</location>
+		<location id="id1" x="-153" y="93">
+			<name x="-255" y="76">Appr</name>
+			<label kind="invariant" x="-255" y="102">t &lt;= 30</label>
+		</location>
+		<location id="id2" x="152" y="-145">
+			<name x="195" y="-153">Leave</name>
+			<label kind="invariant" x="195" y="-127">t &lt;= 30</label>
+		</location>
+		<location id="id3" x="-153" y="-144">
+			<name x="-255" y="-161">Faraway</name>
+		</location>
+		<init ref="id3"/>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id2"/>
+			<label kind="assignment" x="187" y="-17">t = 0</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id0"/>
+			<label kind="guard" x="-34" y="59">t &gt;= 15</label>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-51" y="-204">t &gt;= 15</label>
+			<label kind="synchronisation" x="-51" y="-179">leave[myId]!</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="-238" y="-59">appr[myId]!</label>
+			<label kind="assignment" x="-238" y="-34">t = 0</label>
+		</transition>
+	</template>
+	<template>
+		<name>Sensor</name>
+		<parameter>const trainId myId</parameter>
+		<declaration>// Place local declarations here.
+clock t;</declaration>
+		<location id="id4" x="178" y="119">
+			<name x="204" y="110">Road</name>
+		</location>
+		<location id="id5" x="-127" y="119">
+			<name x="-195" y="110">Entered</name>
+		</location>
+		<location id="id6" x="178" y="-127">
+			<name x="204" y="-136">Left</name>
+		</location>
+		<location id="id7" x="-127" y="-127">
+			<name x="-187" y="-144">Away</name>
+		</location>
+		<init ref="id7"/>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-25" y="-102">trainCount &gt; 0</label>
+			<nail x="17" y="-110"/>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-25" y="-204">trainCount == 0</label>
+			<label kind="synchronisation" x="-25" y="-187">rise!</label>
+			<nail x="17" y="-144"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="187" y="-25">leave[myId]?</label>
+			<label kind="assignment" x="187" y="0">trainCount--</label>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id4"/>
+			<label kind="synchronisation" x="-34" y="136">turnRed!</label>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="-204" y="-25">appr[myId]?</label>
+			<label kind="assignment" x="-221" y="0">trainCount++</label>
+		</transition>
+	</template>
+	<template>
+		<name x="5" y="5">Light</name>
+		<declaration>// Place local declarations here.
+clock t;</declaration>
+		<location id="id8" x="-110" y="-51">
+			<label kind="invariant" x="-120" y="-34">t &lt;= 2</label>
+		</location>
+		<location id="id9" x="-110" y="-348">
+			<label kind="invariant" x="-120" y="-331">t &lt;= 2</label>
+		</location>
+		<location id="id10" x="68" y="-187">
+			<name x="42" y="-229">Green</name>
+		</location>
+		<location id="id11" x="-255" y="-187">
+			<name x="-263" y="-229">Red</name>
+		</location>
+		<init ref="id11"/>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id11"/>
+			<label kind="guard" x="-237" y="-153">t == 2</label>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id10"/>
+			<label kind="guard" x="-17" y="-297">t == 2</label>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id11"/>
+			<label kind="guard" x="-330" y="-191">trainCount &gt; 0</label>
+			<label kind="synchronisation" x="-330" y="-174">lower!</label>
+			<nail x="-348" y="-127"/>
+			<nail x="-348" y="-187"/>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="85" y="-195">turnGreen?</label>
+			<nail x="162" y="-110"/>
+			<nail x="162" y="-255"/>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id11"/>
+			<label kind="synchronisation" x="-340" y="-238">turnRed?</label>
+			<nail x="-348" y="-203"/>
+			<nail x="-348" y="-263"/>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id8"/>
+			<label kind="synchronisation" x="-42" y="-102">turnRed?</label>
+			<label kind="assignment" x="-42" y="-85">t = 0</label>
+			<nail x="-17" y="-119"/>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id9"/>
+			<label kind="synchronisation" x="-212" y="-306">turnGreen?</label>
+			<label kind="assignment" x="-212" y="-289">t = 0</label>
+			<nail x="-187" y="-263"/>
+		</transition>
+	</template>
+	<template>
+		<name>Gate</name>
+		<declaration>// Place local declarations here.
+clock t;</declaration>
+		<location id="id12" x="-212" y="76">
+			<name x="-221" y="102">Up</name>
+			<label kind="invariant" x="-229" y="119">t &lt;= 5</label>
+		</location>
+		<location id="id13" x="51" y="76">
+			<name x="34" y="110">Open</name>
+		</location>
+		<location id="id14" x="-212" y="-119">
+			<name x="-229" y="-178">Down</name>
+			<label kind="invariant" x="-229" y="-161">t &lt;= 5</label>
+		</location>
+		<location id="id15" x="59" y="-119">
+			<name x="50" y="-170">Closed</name>
+		</location>
+		<init ref="id15"/>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id13"/>
+			<label kind="guard" x="69" y="72">trainCount == 0</label>
+			<label kind="synchronisation" x="76" y="85">turnGreen!</label>
+			<nail x="153" y="136"/>
+			<nail x="153" y="76"/>
+		</transition>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id13"/>
+			<label kind="guard" x="-110" y="102">t == 5</label>
+		</transition>
+		<transition>
+			<source ref="id15"/>
+			<target ref="id12"/>
+			<label kind="synchronisation" x="-102" y="-93">rise?</label>
+			<label kind="assignment" x="-102" y="-76">t = 0</label>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id14"/>
+			<label kind="synchronisation" x="-85" y="8">lower?</label>
+			<label kind="assignment" x="-85" y="25">t = 0</label>
+		</transition>
+		<transition>
+			<source ref="id14"/>
+			<target ref="id15"/>
+			<label kind="guard" x="-119" y="-153">t == 5</label>
+		</transition>
+	</template>
+	<system>// Place template instantiations here.
+// List one or more processes to be composed into a system.
+system Trace, Sensor, Light, Gate;
+    </system>
+	<queries>
+		<query>
+			<formula>E&lt;&gt; Light.Green
+			</formula>
+			<comment>
+			</comment>
+		</query>
+		<query>
+			<formula>A[] (Gate.Up imply not Gate.Down) and (Gate.Down imply not Gate.Up)
+			</formula>
+			<comment>Gates are never instructed to raise or lower in the mid-way of closing / opening.
+			</comment>
+		</query>
+		<query>
+			<formula>(Gate.Closed and Gate.Up) --&gt; (not Light.Green)
+			</formula>
+			<comment>Traffic lights are never turned green before opening the gates.
+			</comment>
+		</query>
+		<query>
+			<formula>(Gate.Open and  Gate.Down)  --&gt; Light.Red
+			</formula>
+			<comment>Traffic lights are always turned red before closing the gates.
+			</comment>
+		</query>
+		<query>
+			<formula>forall(i: trainId) Trace(i).Cross --&gt; (not Gate.Open)
+			</formula>
+			<comment>Gates are never open when train is inside crossing.
+			</comment>
+		</query>
+		<query>
+			<formula>A[] not deadlock
+			</formula>
+			<comment>No deadlok
+			</comment>
+		</query>
+	</queries>
+</nta>
